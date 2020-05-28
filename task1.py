@@ -10,17 +10,26 @@ def ecb(filename):
     result = open("encrypted_" + filename, "wb")
     result.write(img[:54])
 
-    # TO-DO: set up cipher for encryption without modes of operation
     key = get_random_bytes(16)
-    cipher = AES.new(key=key)
+    cipher = AES.new(key=key, mode=AES.MODE_ECB)
 
-    # TO-DO: PKCS #7 padding 
-    img_blocks = [img[i*16:(i+1)*16] for i in range(len(body))]
-
-    # TO-DO: encrypt and concat result for each block
-    for block in img_blocks:
-        pass
+    img_blocks = [img[i*16:(i+1)*16] for i in range(int(len(body)/16))]
+    last_block = body[len(img_blocks) * 16:]
+    if (len(last_block) > 0):
+        img_blocks.append(PKCS_7_padding(last_block, 16))
     
+    for block in img_blocks:
+        result.write(cipher.encrypt(block))
+
+    result.close()
+
+
+def PKCS_7_padding(block, block_size):
+    to_pad = block_size - len(block) % block_size
+    pad = to_pad.to_bytes(1, 'big')
+    return block + pad * to_pad
+
+
 def cbc(filename):
     pass
 

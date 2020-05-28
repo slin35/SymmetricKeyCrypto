@@ -63,7 +63,6 @@ def cbc(filename):
     result.write(cipher_text)
 
     for i in range(1, len(img_blocks)):
-        cipher = AES.new(key=cipher_text, mode=AES.MODE_ECB)
         encrypted_text = xor(bytearrayToString(img_blocks[i]), bytearrayToString(cipher_text))
         encrypted_array = [ord(ch) for ch in encrypted_text]
         encrypted_bytes_array = bytes(encrypted_array)
@@ -73,7 +72,7 @@ def cbc(filename):
     result.close()
 
 
-def bytearrayToString(barray):
+def bytearrayToString(barray:bytearray) -> str:
     return "".join(chr(b) for b in barray)
 
 

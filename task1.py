@@ -31,13 +31,6 @@ def PKCS_7_padding(block, block_size):
     return block + pad * to_pad
 
 
-def xor(str1, str2):
-    if (len(str1) != len(str2)):
-        print("unequal string lengths")
-        exit(1)
-    return "".join(chr(ord(x) ^ ord(y)) for (x, y) in zip(str1, str2))
-
-
 def cbc(filename):
     file = open(filename, 'rb')
     img = bytearray(file.read())
@@ -56,14 +49,12 @@ def cbc(filename):
     IV = os.urandom(16)
     key = get_random_bytes(16)
     cipher = AES.new(key=key, mode=AES.MODE_ECB)
-    encrypted_text = xor(bytearrayToString(img_blocks[0]), bytearrayToString(key))
-    encrypted_array = [ord(ch) for ch in encrypted_text]
-    encrypted_bytes_array = bytes(encrypted_array)
-    cipher_text = cipher.encrypt(encrypted_bytes_array)
-    result.write(cipher_text)
 
     for i in range(1, len(img_blocks)):
-        encrypted_text = xor(bytearrayToString(img_blocks[i]), bytearrayToString(cipher_text))
+        if i == 0:
+            encrypted_text = xor(bytearrayToString(img_blocks[0]), bytearrayToString(key))
+        else:
+            encrypted_text = xor(bytearrayToString(img_blocks[i]), bytearrayToString(cipher_text))
         encrypted_array = [ord(ch) for ch in encrypted_text]
         encrypted_bytes_array = bytes(encrypted_array)
         cipher_text = cipher.encrypt(encrypted_bytes_array)
@@ -71,6 +62,11 @@ def cbc(filename):
 
     result.close()
 
+def xor(str1, str2):
+    if (len(str1) != len(str2)):
+        print("unequal string lengths")
+        exit(1)
+    return "".join(chr(ord(x) ^ ord(y)) for (x, y) in zip(str1, str2))
 
 def bytearrayToString(barray:bytearray) -> str:
     return "".join(chr(b) for b in barray)

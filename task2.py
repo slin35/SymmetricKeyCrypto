@@ -17,7 +17,6 @@ cipher = AES.new(_key, AES.MODE_ECB)
 def submit(user_string: str) -> bytearray:
     query = _pre + user_string + _post
     url_encoded = urllib.parse.quote(query)
-    print(url_encoded)
     return aes_128_cbc(url_encoded)
 
 
@@ -40,6 +39,16 @@ def aes_128_cbc(plain_text: str) -> bytearray:
         encrypted_text = cipher.encrypt(bytes(encrypted_text))
         result += encrypted_text
 
+    result = bit_flipping_attack(result)
+    return result
+
+def bit_flipping_attack(result:bytearray) -> bytearray:
+    target = "serdata%3DYou%E2"
+    intended = ";admin=true;"
+
+    for i in range (len(intended)):
+        result[i] = result[i] ^ ord(target[i]) ^ ord(intended[i])
+
     return result
 
 
@@ -60,6 +69,7 @@ def verify(encoded_string:bytearray) -> bool:
         
         result += decrypted_text
 
+    print(result)
     return ';admin=true;' in result
 
 
@@ -75,21 +85,18 @@ def PKCS_7_padding_encode(block:bytearray, block_size:int) -> bytearray:
     pad = bytes(chr(to_pad), 'utf-8')
     return block + pad * to_pad
 
-'''
-def PKCS_7_padding_decode(bytes:bytearray) -> bytearray:
-    pad = ord(bytes.decode('utf-8')[-1])
-    return bytes[:-pad]
-'''
+
 def PKCS_7_padding_decode(bytes:str) -> str:
     pad = ord(bytes[-1])
     return bytes[:-pad]
+
 
 def bytearrayToString(barray:bytes) -> str:
     return "".join(chr(b) for b in barray)
 
 
 def main():
-   a = submit("hello;admin=true;")
+   a = submit("You’re the man now, dog")
    print(verify(a))
 
 
